@@ -1,12 +1,15 @@
-Real-Time Face Detection
-This is a Python project that detects faces using your webcam.
+# Smart Face Tracking & Security System 🚀
 
-🚀 Features
-Detects faces in real-time.
+A Python-based computer vision application that uses motion sensing to trigger real-time face detection and automated image capture.
 
-Uses OpenCV and Haar Cascades.
+## Key Features
+* **Motion Sensor:** Only activates high-power face detection when movement is sensed to save CPU.
+* **Cyber-Tracking UI:** Uses neon green circular overlays to track targets in real-time.
+* **Auto-Capture:** Automatically saves a `.jpg` of detected faces to the project folder.
+* **Sensitivity Tuning:** Easily adjustable motion threshold for different environments.
 
-🛠️ Setup
-Install OpenCV: pip install opencv-python
-
-Run the code: python face_detection.py
+## How to Run
+1.  Install requirements: `pip install opencv-python`
+2.  Ensure `haarcascade_frontalface_default.xml` is in the root folder.
+3.  Run the script: `python face_detection.py`
+4.  Press **'q'** to exit the system safely.
