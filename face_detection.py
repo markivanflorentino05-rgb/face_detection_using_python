@@ -23,6 +23,11 @@ while True:
     cv2.putText(frame, f"Faces Detected: {face_count}", (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
+    # 2. THE SECURITY FEATURE: Save image if a face is found
+    # This saves a file named "face_detected.jpg" in your folder
+    if len(faces) > 0:
+            cv2.imwrite("captured_face.jpg", frame)
+
     # Change (255, 0, 0) to (0, 255, 0) for Neon Green
     # Change the thickness from 5 to 2 for a cleaner look
     # Draw rectangles around the faces
