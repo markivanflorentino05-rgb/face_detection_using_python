@@ -23,9 +23,11 @@ while True:
     cv2.putText(frame, f"Faces Detected: {face_count}", (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
+    # Change (255, 0, 0) to (0, 255, 0) for Neon Green
+    # Change the thickness from 5 to 2 for a cleaner look
     # Draw rectangles around the faces
     for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 5)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
     # Display the resulting frame
     cv2.imshow('Face Detection System', frame)
