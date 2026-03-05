@@ -1,24 +1,39 @@
-# pip install opencv-python
-# haarcascade_frontalface_default.xml
-
 import cv2
+import os
 
-a = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+# 1. Setup the Cascade Classifier with a safe path
+xml_path = "haarcascade_frontalface_default.xml"
+face_cascade = cv2.CascadeClassifier(xml_path)
 
-b = cv2.VideoCapture(0)
+# 2. Start the webcam
+video_capture = cv2.VideoCapture(0)
 
 while True:
-        c_rec,d_image = b.read()
-        e = cv2.cvtColor(d_image, cv2.COLOR_BGR2GRAY)
-        f = a.detectMultiScale(e, 1.3,6)
+    # Capture frame-by-frame
+    ret, frame = video_capture.read()
 
-        for (x1,y1,w1,h1) in f:
-            cv2.rectangle(d_image, (x1,y1), (x1+w1, y1+h1), (255,0,0), 5)
+    # Convert to grayscale for the detector
+    gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        cv2.imshow('img',d_image)
-        h = cv2.waitKey(40) & 0xff
-        if h == 40:
-            break
+    # Detect faces
+    faces = face_cascade.detectMultiScale(gray_image, 1.3, 6)
 
-b.release()
+    # --- OPTION 1: FACE COUNTER ---
+    face_count = len(faces)
+    cv2.putText(frame, f"Faces Detected: {face_count}", (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    # Draw rectangles around the faces
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 5)
+
+    # Display the resulting frame
+    cv2.imshow('Face Detection System', frame)
+
+    # Press 'q' to quit (or the 'x' button)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Cleanup
+video_capture.release()
 cv2.destroyAllWindows()
