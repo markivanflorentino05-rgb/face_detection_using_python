@@ -3,73 +3,81 @@ import os
 import time
 from datetime import datetime
 
-# 1. Setup
+# 1. Setup Configuration
 xml_path = "haarcascade_frontalface_default.xml"
 face_cascade = cv2.CascadeClassifier(xml_path)
-video_capture = cv2.VideoCapture(0)
+video_stream = cv2.VideoCapture(0)
 
+# Create directory for saving images if it doesn't exist
 if not os.path.exists('captures'):
     os.makedirs('captures')
 
-# SETTINGS & COUNTERS
-last_capture_time = 0
-cooldown_seconds = 5
-motion_buffer = 0  # This prevents the "blinking" UI
-threshold_value = 5000 # Higher = less sensitive to noise
+# Settings & State Tracking
+last_capture_timestamp = 0
+capture_cooldown_seconds = 5
+motion_persistence_buffer = 0  # Prevents UI flickering
+motion_sensitivity_threshold = 5000
 
-# Initialize for Motion Detection
-ret, frame1 = video_capture.read()
-gray1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
-gray1 = cv2.GaussianBlur(gray1, (21, 21), 0)
+# Initialize background frame for motion comparison
+success, initial_frame = video_stream.read()
+previous_gray_frame = cv2.cvtColor(initial_frame, cv2.COLOR_BGR2GRAY)
+previous_gray_frame = cv2.GaussianBlur(previous_gray_frame, (21, 21), 0)
 
 while True:
-    ret, frame2 = video_capture.read()
-    if not ret: break
-    current_time = time.time()
+    success, current_frame = video_stream.read()
+    if not success:
+        break
 
-    # 2. MOTION DETECTION
-    gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
-    gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
-    frame_delta = cv2.absdiff(gray1, gray2)
-    thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
-    motion_level = cv2.countNonZero(thresh)
+    current_unix_time = time.time()
 
-    # 3. MOTION BUFFER LOGIC (The "Anti-Blink" Fix)
-    if motion_level > threshold_value:
-        motion_buffer = 30  # Keep UI active for 30 frames after motion is seen
+    # 2. Motion Detection Logic
+    current_gray_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
+    current_gray_frame = cv2.GaussianBlur(current_gray_frame, (21, 21), 0)
 
-    if motion_buffer > 0:
-        motion_buffer -= 1 # Countdown the buffer
+    # Calculate difference between frames
+    frame_delta = cv2.absdiff(previous_gray_frame, current_gray_frame)
+    threshold_frame = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
+    motion_intensity = cv2.countNonZero(threshold_frame)
 
-        faces = face_cascade.detectMultiScale(gray2, 1.3, 6)
-        face_count = len(faces)
+    # 3. Motion Buffer Management
+    if motion_intensity > motion_sensitivity_threshold:
+        motion_persistence_buffer = 30  # Active for 30 frames
 
-        cv2.putText(frame2, f"SYSTEM ACTIVE | Faces: {face_count}", (10, 30),
+    if motion_persistence_buffer > 0:
+        motion_persistence_buffer -= 1
+
+        detected_faces = face_cascade.detectMultiScale(current_gray_frame, 1.3, 6)
+        total_faces = len(detected_faces)
+
+        cv2.putText(current_frame, f"SYSTEM ACTIVE | Faces: {total_faces}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
-        # 4. TIMESTAMPED CAPTURE WITH COOLDOWN
-        if face_count > 0 and (current_time - last_capture_time) > cooldown_seconds:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"captures/face_{timestamp}.jpg"
-            cv2.imwrite(filename, frame2)
-            last_capture_time = current_time
-            print(f"📸 Captured: {filename}")
+        # 4. Automated Image Capture
+        time_since_last_capture = current_unix_time - last_capture_timestamp
+        if total_faces > 0 and time_since_last_capture > capture_cooldown_seconds:
+            file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_path = f"captures/face_{file_timestamp}.jpg"
 
-        # 5. CYBERPUNK TRACKING UI
-        for (x, y, w, h) in faces:
-            cx, cy = x + w//2, y + h//2
-            cv2.circle(frame2, (cx, cy), w//2, (0, 255, 0), 2)
-            cv2.putText(frame2, "TARGET LOCKED", (x, y-10),
+            cv2.imwrite(output_path, current_frame)
+            last_capture_timestamp = current_unix_time
+            print(f"📸 Security Log Saved: {output_path}")
+
+        # 5. Tracking UI
+        for (x_pos, y_pos, width, height) in detected_faces:
+            center_x = x_pos + width // 2
+            center_y = y_pos + height // 2
+            cv2.circle(current_frame, (center_x, center_y), width // 2, (0, 255, 0), 2)
+            cv2.putText(current_frame, "TARGET LOCKED", (x_pos, y_pos - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     else:
-        cv2.putText(frame2, "Status: MONITORING/IDLE", (10, 30),
+        cv2.putText(current_frame, "Status: MONITORING/IDLE", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
-    cv2.imshow('Smart Security v2.0', frame2)
-    gray1 = gray2
+    cv2.imshow('Smart Security v2.1', current_frame)
+    previous_gray_frame = current_gray_frame
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-video_capture.release()
+video_stream.release()
 cv2.destroyAllWindows()
