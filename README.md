@@ -1,15 +1,27 @@
-# Smart Face Tracking & Security System 🚀
+👤 Face Detection Security System v2.1
+A professional Python-based security application that uses OpenCV for real-time motion sensing, facial recognition tracking, and automated event logging.
 
-A Python-based computer vision application that uses motion sensing to trigger real-time face detection and automated image capture.
+✨ Key Features
+Motion-Triggered Logic: Optimizes performance by only activating face detection when movement is sensed in the frame.
 
-## Key Features
-* **Motion Sensor:** Only activates high-power face detection when movement is sensed to save CPU.
-* **Cyber-Tracking UI:** Uses neon green circular overlays to track targets in real-time.
-* **Auto-Capture:** Automatically saves a `.jpg` of detected faces to the project folder.
-* **Sensitivity Tuning:** Easily adjustable motion threshold for different environments.
+Persistence Buffer: Includes a motion_persistence_buffer to ensure stable tracking even if a subject momentarily stops moving.
 
-## How to Run
-1.  Install requirements: `pip install opencv-python`
-2.  Ensure `haarcascade_frontalface_default.xml` is in the root folder.
-3.  Run the script: `python face_detection.py`
-4.  Press **'q'** to exit the system safely.
+Auto-Capture System: Automatically saves high-resolution .jpg logs with unique timestamps to the local /captures directory.
+
+Smart Cooldown: Integrated capture_cooldown_seconds to prevent storage bloat from redundant photos.
+
+🚀 Getting Started
+Install Dependencies:
+pip install opencv-python
+
+Configuration: Ensure haarcascade_frontalface_default.xml is located in the root directory.
+
+Execution:
+python face_detection.py
+
+📂 File Structure
+face_detection.py: Main application logic and UI.
+
+.gitignore: Configured to ignore IDE settings and local capture data for a clean repository.
+
+README.md: Project documentation and setup guide.
